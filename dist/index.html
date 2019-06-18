@@ -1,0 +1,290 @@
+<!DOCTYPE html><html lang=en style="zoom: 80%"><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><link rel=icon href=/favicon.ico><title>百人一首ジェネレーター</title><link rel=stylesheet href=https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css integrity=sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm crossorigin=anonymous><script src=https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js integrity=sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl crossorigin=anonymous></script><script src=https://unpkg.com/vue@2.0.3/dist/vue.js></script><script src=https://cdn.jsdelivr.net/npm/html2canvas@1.0.0-alpha.12/dist/html2canvas.min.js></script><script src=canvas.js></script><link href=/css/app.9837611d.css rel=preload as=style><link href=/js/app.d95456f9.js rel=preload as=script><link href=/js/chunk-vendors.7a32d01e.js rel=preload as=script><link href=/css/app.9837611d.css rel=stylesheet></head><body><div class=canvas-wrapper><canvas id=base width=611 height=378></canvas><canvas id=shimonoku width=310 height=300></canvas><canvas id=kaminoku width=310 height=300></canvas></div><div id=utainput><span class=textstyle>下の句</span> <span class=textstyle>上の句</span><br><div style=display:inline-flex><textarea class="form-control textarea" @input=changeShimoText v-model=shimonoku placeholder=下の句を入力してね></textarea> <textarea class="form-control textarea" @input=changeKamiText v-model=kaminoku placeholder=上の句を入力してね></textarea></div><div style="text-align: right;"><a href=# class=btn-border v-on:click=generate>画像を生成</a></div></div><canvas id=combined style=margin-top:200px width=611 height=378></canvas><br><style type=text/css>/* canvas{
+        border: 1px solid black;
+      } 
+      body{
+        background-image: url('tatami01.jpg');
+      }*/
+
+      /* ここから下がボタンのCSS　*/
+      .btn-border {
+        display: inline-block;
+        background-color: #ffc0cb;
+        max-width: 200px;
+        text-align: left;
+        border: 2px solid black;
+        font-size: 18px;
+        color: black;
+        text-decoration: none;
+        font-weight: bold;
+        padding: 8px 16px;
+        border-radius: 4px;
+        transition: .4s;
+        font-family: 'Avenir', Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-align: center;
+      }
+
+      .btn-border:hover {
+        background-color: #9ec34b;
+        border-color: #cbe585;
+        color: #FFF;
+      }
+
+      .canvas-wrapper {
+          position: relative;
+      }
+      .canvas-wrapper canvas {
+          position: absolute;
+          top: 0;
+          left: 0;
+      }
+      .textstyle {
+        margin:5px 80px;
+      }
+
+      textarea {
+        resize: none;
+        width:150px;
+        height:100px;
+        font-size: 15px;
+        margin:0 20px;
+      }
+
+      #utainput {
+        font-family: 'Avenir', Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-align: right;
+        color: #000000;
+        font-size: 25px;
+      }</style><script src=/js/chunk-vendors.7a32d01e.js></script><script src=/js/app.d95456f9.js></script></body></html><script>/*
+ * @author phi_jp
+ */
+ var img = new Image();    //画像オブジェクト作成
+ img.src = "yuriuta_image_bg.png";  //写真のパスを指定する
+
+　const canvas_base = document.getElementById("base");
+　this.context_base = canvas_base.getContext("2d");
+
+var tategaki_kaminoku = function(con, text, x, y) {
+  var textList = text.split('\n');
+  for (let i = 0; i < textList.length; i++){
+    if(i % 2 != 0){
+      textList.splice(i,0,"");
+    }
+  }
+  var lineHeight = con.measureText("あ").width;
+  textList.forEach(function(elm, i) {
+    Array.prototype.forEach.call(elm, function(ch, j) {
+      con.fillText(ch, x-lineHeight*i, y+lineHeight*j);
+    });
+  });
+};
+
+var tategaki_shimonoku = function(con, text, x, y) {
+  var textList = text.split('\n');
+  for (let i = 0; i < textList.length; i++){
+    if(i % 2 != 0){
+      textList.splice(i,0,"");
+    }
+  }
+  var lineHeight = con.measureText("あ").width;
+  textList.forEach(function(elm, i) {
+    Array.prototype.forEach.call(elm, function(ch, j) {
+      con.fillText(ch, x-lineHeight*i, y+lineHeight*j);
+    });
+  });
+};
+
+
+    function generate(){
+
+      // merge all layers onto layer1
+      // merge all layers onto layer1
+      canvas = document.getElementById("base");
+      canvas2 = document.getElementById("kaminoku");
+      canvas3 = document.getElementById("shimonoku");
+
+　    context = canvas.getContext("2d");  
+
+      context.drawImage(canvas2, 0, 0);
+      context.drawImage(canvas3, 0, 0);
+
+      tategaki_kaminoku(context_kami, this.kaminoku, 230, 15); 
+      tategaki_shimonoku(context_shimo, this.shimonoku, 133, 100); 
+
+      // save the merged drawings as an image
+      // and set the img element src to that merged image
+
+        var myimg = new Image();
+        myimg.onload = function () {
+            document.getElementById("results").src = myimg.src;
+        }
+        myimg.src = canvas.toDataURL();
+
+
+/*  			html2canvas(document.getElementById("base")).then(function(canvas){
+        console.log("oioioioio")
+				var result = document.querySelector("#result");
+				result.innerHTML = '';
+				result.appendChild(canvas)
+			});  */
+		}
+
+
+  window.onload = function() {
+    this.context_base.drawImage(img,0,0);
+
+
+/*   context_shimo.rotate(-14 * Math.PI / 180);
+  context.drawImage(img,0,0);
+  var text1 = "test";
+  tategaki(context_shimo, text1, 133, 100);
+
+  context_kami.rotate(16 * Math.PI / 180);
+  var text2 = "あきのはの\n\nかりほのいをの\n\nとまをあらみ";
+  tategaki(context_kami, text2, 230, 15);  */
+};
+
+
+
+
+var utainput = new Vue({
+  el: '#utainput',
+  props:['shimo', 'kami'],
+  data: {
+    shimonoku: "",
+    kaminoku: "",
+  },
+  imgsrc: "yuriuta_image_bg.png",
+  methods: {
+    changeKaminoku(event){
+      this.kaminoku = event.targt.value;
+    },
+    changeShimonoku(event){
+      this.shimonoku = event.targt.value;
+    }
+  },
+  mounted() {
+    // init canvas
+    //const canvas = this.$refs.canvas;
+    //if (!canvas || !canvas.getContext) return false;
+    
+    // context
+
+
+
+    // align center(horizontal/vertical)
+    //this.context.textAlign = "center";
+    //this.context.textBaseline = "middle";
+
+    // initial draw
+    //this.drawImage("");
+    const canvas_shimo = document.getElementById("shimonoku");
+    const canvas_kami = document.getElementById("kaminoku");
+    this.context_shimo = canvas_shimo.getContext("2d");
+    this.context_kami = canvas_kami.getContext("2d");
+    canvas_shimo.style.top = "25px";
+    canvas_shimo.style.left = "10px";
+    canvas_kami.style.top = "35px";
+    canvas_kami.style.left = "300px";
+    this.context_shimo.font = "34px 'メイリオ'";
+    this.context_kami.font = "34px 'メイリオ'";
+    this.context_kami.rotate(16 * Math.PI / 180);
+    this.context_shimo.rotate(-14 * Math.PI / 180);
+    
+  },  
+  methods: {
+    generate(){
+
+      var canvas = document.getElementById("combined");
+      var context = canvas.getContext("2d");  
+      var canvas_shimo = document.getElementById("shimonoku");
+      var canvas_kami = document.getElementById("kaminoku");
+      var context_shi = canvas_shimo.getContext("2d");  
+      var context_ka = canvas_kami.getContext("2d");   
+      
+/*       context2.clearRect(-10,-30,400, 400);
+      context3.clearRect(0,-20,400, 400);
+      context2.fillStyle = "red";
+      context3.fillStyle = "blue"; 
+      canvas_shimo.style.top = "25px";
+      canvas_shimo.style.left = "10px";
+      canvas_kami.style.top = "35px";
+      canvas_kami.style.left = "300px";*/
+
+
+
+      //tategaki_kaminoku(context3, this.kaminoku, 200, 30); 
+      //tategaki_shimonoku(context2, this.shimonoku, 133, 130); 
+      //context2.fillRect(10,88,230,320);
+      //context3.fillRect(10,88,310,200);
+      //context.drawImage(canvas_kami, 0,0);
+      //context.drawImage(canvas_shimo, 0, 0, 310,320);
+
+      //context.drawImage(canvas_kami,0,0);
+      //context.drawImage(canvas_shimo,0,0);
+      context.drawImage(img,0,0);
+      context.drawImage(canvas_kami, 300,40);
+      context.drawImage(canvas_shimo, 15,30);
+/*       var result = document.querySelector("#res");
+				result.innerHTML = '';
+        result.appendChild(canvas); */
+        
+      // save the merged drawings as an image
+      // and set the img element src to that merged image
+
+/*         var myimg = new Image();
+        myimg.onload = function () {
+            document.getElementById("results").src = myimg.src;
+        }
+        myimg.src = canvas.toDataURL();  */
+
+
+    },
+
+    drawImage(text) {
+      // clear canvas
+      //console.log("my size " + this.canvas_shimo.width+ " AND " )
+      
+      this.context_shimo.clearRect(-10,-30,400, 400);
+      this.context_kami.clearRect(0,-20,400, 400);
+      // image obj
+      const img = new Image();
+      img.src = this.imgsrc;
+/*       img.onload = () => {
+        this.context.drawImage(img, 0, 0, 200, 100);
+        this.drawText(
+          text,
+          this.textareaRate.start.x * 200,
+          this.textareaRate.start.y * 100,
+          this.textareaRate.end.x * 200,
+          this.textareaRate.end.y * 100
+        );
+      }; */
+
+       
+        var text2 = "あきのはの\n\nかりほのいをの\n\nとまをあらみ";
+        tategaki_kaminoku(this.context_kami, this.kaminoku, 230, 15); 
+        tategaki_shimonoku(this.context_shimo, this.shimonoku, 140, 110); 
+      img.onload = () => {
+/*         var canvas = document.getElementById("base");
+        var canvas_shimo = document.getElementById("shimonoku");
+        var canvas_kami = document.getElementById("kaminoku");
+        var context= canvas.getContext("2d");
+        var context_shimo= canvas_shimo.getContext("2d");
+        var context_kami= canvas_kami.getContext("2d"); */
+
+        //tategaki(this.context_shimo, text, 133, 100);
+
+      };
+    },
+    changeShimoText() {
+      this.drawImage(this.shimonoku);
+    },
+    changeKamiText() {
+      this.drawImage(this.kaminoku);
+    }
+  }
+})</script>
